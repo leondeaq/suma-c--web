@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba C++ + WebAssembly (Suma)</title>
+    <!-- Bootstrap 5 CDN para diseño adaptativo rápido -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+        :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-secondary: #6b7280;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-light: #eef2ff;
+    --border: #e5e7eb;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+}
+
+body {
+    background-color: var(--bg);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+}
+
+.card {
+    background: var(--card);
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+}
+
+.form-control {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+#btnCalcular {
+    background-color: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.7rem;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+#btnCalcular:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+#btnCalcular:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+#btnCalcular:disabled {
+    background-color: #9ca3af;
+    opacity: 1;
+}
+
+#resultadoContainer {
+    background-color: var(--accent-light);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius);
+    color: var(--text);
+}
+
+#resultadoContainer strong {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+#resultadoText {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent);
+}   
+    </style>
+
+</head>
+<body class="bg-light d-flex align-items-center min-vh-100">
+
+    <div class="container" style="max-width: 450px;">
+        <div class="card shadow-sm p-4">
+            <h3 class="text-center mb-4">Suma en C++ (WASM)</h3>
+            
+            <div class="mb-3">
+                <label class="form-label">Número A:</label>
+                <input type="number" id="numA" class="form-control" value="10">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Número B:</label>
+                <input type="number" id="numB" class="form-control" value="25">
+            </div>
+            
+            <button id="btnCalcular" class="btn w-100" onclick="ejecutarSuma()" disabled>
+                Cargando C++ en memoria...
+            </button>
+
+            <div class="mt-4 alert text-center d-none" id="resultadoContainer">
+                <strong>Resultado devuelto por C++: </strong>
+                <span id="resultadoText" class="fs-4 d-block mt-1">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Cargar el conector JS generado por Emscripten -->
+    <script src="suma.js"></script>
+
+    <!-- 2. Lógica de interacción con la página -->
+    <script>
+        // Esta función se ejecuta automáticamente cuando el archivo .wasm termina de cargarse en RAM
+        Module.onRuntimeInitialized = function() {
+            const btn = document.getElementById('btnCalcular');
+            btn.disabled = false;
+            btn.innerText = 'Calcular Operación en C++';
+        };
+
+        function ejecutarSuma() {
+            // Capturar los valores de las casillas de texto
+            const a = parseInt(document.getElementById('numA').value) || 0;
+            const b = parseInt(document.getElementById('numB').value) || 0;
+
+            // Llamada a la función de C++ usando el prefijo '_'
+            const resultado = Module._sumar(a, b);
+
+            // Mostrar el resultado en el diseño
+            document.getElementById('resultadoText').innerText = resultado;
+            document.getElementById('resultadoContainer').classList.remove('d-none');
+        }
+    </script>
+</body>
+</html>
